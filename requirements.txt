@@ -64,3 +64,5 @@ watchdog==6.0.0
 websockets==16.0
 yfinance==1.2.0
 plotly
+fredapi
+streamlit-searchbox
