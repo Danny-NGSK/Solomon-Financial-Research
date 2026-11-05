@@ -21,7 +21,7 @@ MACRO_SERIES = {
 
 
 def _get_fred() -> Fred:
-    api_key = os.getenv("FRED_API_KEY")
+    from src.config.settings import FRED_API_KEY as api_key
     if not api_key:
         raise ValueError(
             "FRED_API_KEY is not set in .env.\n"

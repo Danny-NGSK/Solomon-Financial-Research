@@ -220,7 +220,7 @@ def load_company_data(ticker: str) -> dict:
     quarterly = {}
     try:
         import os, requests, pandas as pd
-        av_key = os.getenv("ALPHA_VANTAGE_API_KEY")
+        from src.config.settings import ALPHA_VANTAGE_API_KEY as av_key
         if av_key:
             url = (
                 f"https://www.alphavantage.co/query"

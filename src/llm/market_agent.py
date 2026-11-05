@@ -8,13 +8,13 @@ import os
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
-from src.config.settings import LLM_MODEL_DEFAULT
+from src.config.settings import LLM_MODEL_DEFAULT, OPENAI_API_KEY
 
 load_dotenv()
 
 
 def _get_client() -> OpenAI:
-    return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    return OpenAI(api_key=OPENAI_API_KEY)
 
 SYSTEM_PROMPT = """You are a professional investment research analyst.
 Based on current market data and news, you dynamically identify and analyze the key market factors that investors must know at this point in time.

@@ -33,6 +33,7 @@ from src.llm.market_agent import analyze_market
 from src.llm.industry_agent import analyze_industry
 from src.llm.company_agent import analyze_company
 from src.llm.report_generator import generate_final_report
+from src.config.usage_limit import try_consume
 from src.data_loader.trending_loader import load_trending_tickers
 
 from src.ui.common import _SECTOR_COLORS
@@ -314,6 +315,9 @@ def main():
         st.warning("Please enter a ticker or company name.")
 
     # Store data and analysis results in session_state on Analyze button click or Enter
+    if do_analyze and search_query and not try_consume("analyze"):
+        do_analyze = False
+
     if do_analyze and search_query:
         import random, time
 
@@ -646,7 +650,7 @@ def main():
                 with col_btn:
                     report_btn = st.button("📋 Generate Report", width='stretch')
 
-                if report_btn:
+                if report_btn and try_consume("report"):
                     with st.spinner("Generating investment report..."):
                         try:
                             from datetime import datetime

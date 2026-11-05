@@ -8,7 +8,7 @@ import os
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
-from src.config.settings import LLM_MODEL_DEFAULT
+from src.config.settings import LLM_MODEL_DEFAULT, OPENAI_API_KEY
 
 load_dotenv()
 
@@ -179,7 +179,7 @@ viz_type selection:
 
 Return only valid JSON."""
 
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client = OpenAI(api_key=OPENAI_API_KEY)
     response = client.chat.completions.create(
         model=LLM_MODEL_DEFAULT,
         messages=[

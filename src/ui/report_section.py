@@ -2,6 +2,7 @@
 Final investment report renderer and Ask Solomon chat section.
 """
 import streamlit as st
+from src.config.usage_limit import try_consume
 
 from src.ui.common import _section_header, _section_gap
 
@@ -214,7 +215,7 @@ def render_chat_section():
     # ── Input box (code order: below = lower on page)
     question = st.chat_input("Ask Solomon anything...")
 
-    if question:
+    if question and try_consume("chat"):
         history.append({"role": "user", "content": question})
 
         system_prompt = _build_chat_system_prompt(report, ctx)
@@ -222,9 +223,9 @@ def render_chat_section():
         for m in history[-10:]:
             messages.append({"role": m["role"], "content": m["content"]})
 
-        import os
         from openai import OpenAI as _OAI
-        _client = _OAI(api_key=os.getenv("OPENAI_API_KEY"))
+        from src.config.settings import OPENAI_API_KEY
+        _client = _OAI(api_key=OPENAI_API_KEY)
 
         # Render existing history + new question + streaming response in container (above)
         with msg_container:

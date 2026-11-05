@@ -9,7 +9,7 @@ import json
 import statistics
 from openai import OpenAI
 from dotenv import load_dotenv
-from src.config.settings import LLM_MODEL_REPORT
+from src.config.settings import LLM_MODEL_REPORT, OPENAI_API_KEY
 
 load_dotenv()
 
@@ -182,7 +182,7 @@ def generate_final_report(
         company_data, industry_data,
     )
 
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client = OpenAI(api_key=OPENAI_API_KEY)
     response = client.chat.completions.create(
         model=LLM_MODEL_REPORT,
         messages=[

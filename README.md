@@ -1,4 +1,4 @@
-# Financial AI Agent
+# Solomon Financial Research
 
 AI 에이전트가 **시장(거시경제) → 산업 → 개별 종목** 3단계로 투자 리서치를 동적으로 수행하는 Streamlit 웹 애플리케이션입니다. 고정된 리포트 템플릿 대신, 조회 시점의 데이터를 바탕으로 LLM이 그때그때 중요한 포인트를 판단해 분석합니다.
 
