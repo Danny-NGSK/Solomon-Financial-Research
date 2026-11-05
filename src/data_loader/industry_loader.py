@@ -5,9 +5,9 @@ Industry data loader
 - Peer comparison: yfinance (predefined peer map → dynamic industry fallback)
 - Industry-related news: yfinance
 """
-import time
 import yfinance as yf
 from src.data_loader.news_loader import fetch_news
+from src.data_loader.info_loader import fetch_info
 
 # ─────────────────────────────────────────
 # Sector → ETF mapping (SPDR-based)
@@ -88,30 +88,9 @@ def _fetch_ticker(ticker: str, period: str = "6mo") -> dict:
         return {}
 
 
-# Peer fundamentals change slowly, so cache .info per ticker for 6h.
-# This cuts Yahoo requests sharply (peers repeat across lookups) and avoids rate limits.
-_INFO_CACHE: dict = {}
-_INFO_TTL = 6 * 3600
-
-
-def _fetch_info(ticker: str, retries: int = 2) -> dict:
-    """yf.Ticker(t).info with a short retry (Yahoo rate-limits bursts) and an in-process cache."""
-    now = time.time()
-    hit = _INFO_CACHE.get(ticker)
-    if hit and now - hit[0] < _INFO_TTL:
-        return hit[1]
-    for attempt in range(retries + 1):
-        try:
-            info = yf.Ticker(ticker).info or {}
-            # A rate-limited response often comes back as a near-empty dict
-            if info.get("shortName") or info.get("trailingPE") or info.get("forwardPE"):
-                _INFO_CACHE[ticker] = (now, info)
-                return info
-        except Exception as e:
-            print(f"[Industry] {ticker} info attempt {attempt + 1} failed: {e}")
-        if attempt < retries:
-            time.sleep(1.5 * (attempt + 1))
-    return {}
+def _fetch_info(ticker: str) -> dict:
+    """Peer / sector lookups only need Yahoo fields; skip Alpha Vantage to save its daily quota."""
+    return fetch_info(ticker, use_av_fallback=False)
 
 
 def load_industry_data(ticker: str) -> dict:
@@ -134,11 +113,7 @@ def load_industry_data(ticker: str) -> dict:
     result = {"ticker": ticker}
 
     # ── Company basic info ──
-    info = {}
-    try:
-        info = yf.Ticker(ticker).info or {}
-    except Exception as e:
-        print(f"[Industry] {ticker} info load failed: {e}")
+    info = _fetch_info(ticker)
 
     result["company_name"] = info.get("longName") or info.get("shortName") or ticker
     result["sector"]       = info.get("sector", "Unknown")

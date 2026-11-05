@@ -9,6 +9,7 @@ Company data loader
 """
 import yfinance as yf
 from src.data_loader.news_loader import fetch_news
+from src.data_loader.info_loader import fetch_info
 
 
 def _safe(info: dict, key: str, default=None):
@@ -50,11 +51,7 @@ def load_company_data(ticker: str) -> dict:
     t = yf.Ticker(ticker)
 
     # ── Basic info ──
-    try:
-        info = t.info or {}
-    except Exception as e:
-        print(f"[Company] {ticker} info load failed: {e}")
-        info = {}
+    info = fetch_info(ticker)   # Yahoo with retry + Alpha Vantage fallback for missing fields
 
     result = {
         "ticker":       ticker,
@@ -172,8 +169,10 @@ def load_company_data(ticker: str) -> dict:
             for col in ["strongBuy", "buy", "hold", "sell", "strongSell"]:
                 if col in row:
                     ratings[col] = int(row[col])
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[Company] {ticker} recommendations_summary failed: {e}")
+    if not ratings and info.get("_av_ratings"):
+        ratings = info["_av_ratings"]
 
     result["analyst"] = {
         "recommendation": _safe(info, "recommendationKey", "–"),
