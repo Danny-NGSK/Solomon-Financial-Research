@@ -6,6 +6,7 @@ Industry data loader
 - Industry-related news: yfinance
 """
 import yfinance as yf
+from src.data_loader.news_loader import fetch_news
 
 # ─────────────────────────────────────────
 # Sector → ETF mapping (SPDR-based)
@@ -161,24 +162,7 @@ def load_industry_data(ticker: str) -> dict:
     result["peers"] = peers
 
     # ── Industry-related news ──
-    news_items = []
-    try:
-        raw_news = yf.Ticker(ticker).news[:10]
-        for item in raw_news:
-            content   = item.get("content") or {}
-            title     = item.get("title") or content.get("title", "")
-            url       = item.get("link") or (content.get("clickThroughUrl") or {}).get("url", "")
-            publisher = item.get("publisher") or (content.get("provider") or {}).get("displayName", "")
-            thumbnail = None
-            thumb_data = content.get("thumbnail")
-            if thumb_data:
-                resolutions = thumb_data.get("resolutions", [])
-                if resolutions:
-                    thumbnail = resolutions[0].get("url")
-            if title:
-                news_items.append({"title": title, "url": url, "publisher": publisher, "thumbnail": thumbnail})
-    except Exception as e:
-        print(f"[Industry] {ticker} news load failed: {e}")
+    news_items = fetch_news(ticker, n=10, tag="Industry")
 
     result["news"] = news_items
     return result

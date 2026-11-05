@@ -7,6 +7,7 @@ Market data loader
 """
 import requests
 import yfinance as yf
+from src.data_loader.news_loader import fetch_news
 from src.data_loader.fred_loader import fetch_macro_snapshot
 
 
@@ -124,34 +125,7 @@ def load_market_data() -> dict:
         result["fear_greed"] = _calc_fear_greed_from_vix(result["vix"])
 
     # --- Market news (with thumbnails) ---
-    news_items = []
-    try:
-        raw_news = yf.Ticker("SPY").news[:12]
-        for item in raw_news:
-            content = item.get("content") or {}
-
-            thumbnail = None
-            thumb_data = content.get("thumbnail")
-            if thumb_data:
-                resolutions = thumb_data.get("resolutions", [])
-                if resolutions:
-                    thumbnail = resolutions[0].get("url")
-
-            title     = item.get("title") or content.get("title", "")
-            url       = item.get("link") or (content.get("clickThroughUrl") or {}).get("url", "")
-            publisher = item.get("publisher") or (content.get("provider") or {}).get("displayName", "")
-            summary   = content.get("summary", "")
-
-            if title:
-                news_items.append({
-                    "title": title,
-                    "url": url,
-                    "publisher": publisher,
-                    "thumbnail": thumbnail,
-                    "summary": summary,
-                })
-    except Exception as e:
-        print(f"[Market] News load failed: {e}")
+    news_items = fetch_news("SPY", n=12, tag="Market")
 
     result["news"] = news_items
 
