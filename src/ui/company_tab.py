@@ -205,6 +205,9 @@ def render_company_tab(company_data: dict, analysis: dict, industry_data: dict |
 
     # ── Peer valuation comparison ──
     peers = (industry_data or {}).get("peers", [])
+    if not peers:
+        with st.expander("📊 Peer Valuation Comparison", expanded=False):
+            st.info("Couldn't load peer companies for this ticker right now. Try again in a few minutes.")
     if peers:
         import pandas as pd, numpy as np
 
@@ -243,7 +246,8 @@ def render_company_tab(company_data: dict, analysis: dict, industry_data: dict |
 
         # Median row
         numeric_keys = [k for _, k, _ in VAL_COLS]
-        medians = {k: df_raw[k].median() for k in numeric_keys}
+        peer_only = df_raw[~df_raw["_is_target"].astype(bool)]   # median of peers only, excluding the target
+        medians = {k: pd.to_numeric(peer_only[k], errors="coerce").median() for k in numeric_keys}
         median_row = {"Company": "── Peer Median ──", "_is_target": False}
         for k in numeric_keys:
             median_row[k] = medians[k]
@@ -287,6 +291,9 @@ def render_company_tab(company_data: dict, analysis: dict, industry_data: dict |
         with st.expander("📊 Peer Valuation Comparison", expanded=True):
             st.caption("Green: below peer median (undervalued or margin advantage) · Red: above median (overvalued or margin disadvantage) · Yellow: target")
             st.dataframe(styled, width='stretch')
+            _peer_vals = [p.get(k) for p in peers for k in numeric_keys]
+            if all(v is None for v in _peer_vals):
+                st.info("Peer valuation data is temporarily unavailable from Yahoo Finance. Try again in a few minutes.")
 
     # ── Short Interest ──
     si = company_data.get("short_interest", {})
